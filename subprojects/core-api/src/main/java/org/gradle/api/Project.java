@@ -1603,7 +1603,7 @@ public interface Project extends Comparable<Project>, ExtensionAware, PluginAwar
     /**
      * TBD
      *
-     * @since 8.10
+     * @since 8.11
      */
     @Incubating
     BuildIsolatedModelLookup getBuildIsolatedModels();
