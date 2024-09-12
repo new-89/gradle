@@ -56,7 +56,7 @@ public class DefaultResolvedArtifactsBuilder implements DependencyArtifactsVisit
         }
     }
 
-    public VisitedArtifactResults complete() {
-        return new DefaultVisitedArtifactResults(Collections.unmodifiableList(artifactSetsById));
+    public VisitedArtifactResults complete(ArtifactSelectionServices artifactSelectionServices) {
+        return new DefaultVisitedArtifactResults(Collections.unmodifiableList(artifactSetsById), artifactSelectionServices);
     }
 }

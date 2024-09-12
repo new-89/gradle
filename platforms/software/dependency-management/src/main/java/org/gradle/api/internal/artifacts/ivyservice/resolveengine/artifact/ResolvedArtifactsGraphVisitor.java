@@ -18,21 +18,22 @@ package org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import org.gradle.api.artifacts.capability.CapabilitySelector;
+import org.gradle.api.internal.artifacts.ivyservice.resolveengine.excludes.specs.ExcludeSpec;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.DependencyGraphEdge;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.DependencyGraphNode;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.DependencyGraphVisitor;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.RootGraphNode;
 import org.gradle.api.internal.artifacts.type.ArtifactTypeRegistry;
-import org.gradle.api.internal.attributes.immutable.ImmutableAttributesSchema;
+import org.gradle.api.internal.attributes.ImmutableAttributes;
 import org.gradle.internal.component.local.model.LocalFileDependencyMetadata;
 import org.gradle.internal.component.model.ComponentGraphResolveState;
-import org.gradle.internal.component.model.GraphVariantSelector;
+import org.gradle.internal.component.model.IvyArtifactName;
 import org.gradle.internal.component.model.VariantGraphResolveState;
 import org.gradle.internal.model.CalculatedValueContainerFactory;
-import org.gradle.internal.resolve.resolver.ArtifactResolver;
-import org.gradle.internal.resolve.resolver.DefaultVariantArtifactResolver;
-import org.gradle.internal.resolve.resolver.VariantArtifactResolver;
 
+import java.util.List;
+import java.util.Set;
 import java.util.function.LongFunction;
 
 /**
@@ -44,25 +45,15 @@ public class ResolvedArtifactsGraphVisitor implements DependencyGraphVisitor {
     private final DependencyArtifactsVisitor artifactResults;
     private final ArtifactTypeRegistry artifactTypeRegistry;
     private final CalculatedValueContainerFactory calculatedValueContainerFactory;
-    private final VariantArtifactResolver variantResolver;
-    private final GraphVariantSelector graphVariantSelector;
-    private final ImmutableAttributesSchema consumerSchema;
 
     public ResolvedArtifactsGraphVisitor(
         DependencyArtifactsVisitor artifactsBuilder,
         ArtifactTypeRegistry artifactTypeRegistry,
-        CalculatedValueContainerFactory calculatedValueContainerFactory,
-        ArtifactResolver artifactResolver,
-        ResolvedVariantCache resolvedVariantCache,
-        GraphVariantSelector graphVariantSelector,
-        ImmutableAttributesSchema consumerSchema
+        CalculatedValueContainerFactory calculatedValueContainerFactory
     ) {
         this.artifactResults = artifactsBuilder;
         this.artifactTypeRegistry = artifactTypeRegistry;
         this.calculatedValueContainerFactory = calculatedValueContainerFactory;
-        this.variantResolver = new DefaultVariantArtifactResolver(artifactResolver, artifactTypeRegistry, resolvedVariantCache);
-        this.graphVariantSelector = graphVariantSelector;
-        this.consumerSchema = consumerSchema;
     }
 
     @Override
@@ -102,18 +93,24 @@ public class ResolvedArtifactsGraphVisitor implements DependencyGraphVisitor {
         ComponentGraphResolveState component = toNode.getOwner().getResolveState();
         VariantGraphResolveState variant = toNode.getResolveState();
 
+        ImmutableAttributes attributes = dependency.getAttributes();
+        List<IvyArtifactName> artifacts = dependency.getDependencyMetadata().getArtifacts();
+        ExcludeSpec exclusions = dependency.getExclusions();
+        Set<CapabilitySelector> capabilitySelectors = dependency.getDependencyMetadata().getSelector().getCapabilitySelectors();
+
         // Do not share an ArtifactSet if the artifacts are modified by the dependency.
-        if (!dependency.getDependencyMetadata().getArtifacts().isEmpty() ||
-            !dependency.getAttributes().isEmpty() ||
-            dependency.getExclusions().mayExcludeArtifacts()
+        if (!artifacts.isEmpty() ||
+            !attributes.isEmpty() ||
+            !capabilitySelectors.isEmpty() ||
+            exclusions.mayExcludeArtifacts()
         ) {
             int id = nextId++;
-            return new ArtifactsForNode(id, new VariantResolvingArtifactSet(variantResolver, component, variant, dependency, graphVariantSelector, consumerSchema, calculatedValueContainerFactory));
+            return new ArtifactsForNode(id, new VariantResolvingArtifactSet(component, variant, attributes, artifacts, exclusions, capabilitySelectors));
         }
 
         return artifactsByNodeId.computeIfAbsent(toNode.getNodeId(), (LongFunction<ArtifactsForNode>) value -> {
             int id = nextId++;
-            return new ArtifactsForNode(id, new VariantResolvingArtifactSet(variantResolver, component, variant, dependency, graphVariantSelector, consumerSchema, calculatedValueContainerFactory));
+            return new ArtifactsForNode(id, new VariantResolvingArtifactSet(component, variant, attributes, artifacts, exclusions, capabilitySelectors));
         });
     }
 
