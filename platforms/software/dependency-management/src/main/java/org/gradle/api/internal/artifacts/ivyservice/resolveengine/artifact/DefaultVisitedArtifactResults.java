@@ -16,6 +16,7 @@
 
 package org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.gradle.api.artifacts.ResolutionStrategy;
 
@@ -29,7 +30,7 @@ public class DefaultVisitedArtifactResults implements VisitedArtifactResults {
     private final ArtifactSelectionServices artifactSelectionServices;
 
     public DefaultVisitedArtifactResults(
-        List<ArtifactSet> artifactsById,
+        ImmutableList<ArtifactSet> artifactsById,
         ArtifactSelectionServices artifactSelectionServices
     ) {
         this.artifactsById = artifactsById;
