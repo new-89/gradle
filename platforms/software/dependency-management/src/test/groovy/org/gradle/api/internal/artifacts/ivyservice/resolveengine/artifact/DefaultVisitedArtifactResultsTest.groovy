@@ -16,7 +16,7 @@
 
 package org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact
 
-
+import com.google.common.collect.ImmutableList
 import spock.lang.Specification
 
 class DefaultVisitedArtifactResultsTest extends Specification {
@@ -33,7 +33,7 @@ class DefaultVisitedArtifactResultsTest extends Specification {
         artifacts1.select(services, _) >> variant1Artifacts
         artifacts2.select(services, _) >> variant2Artifacts
 
-        def results = new DefaultVisitedArtifactResults([artifacts1, artifacts2], services)
+        def results = new DefaultVisitedArtifactResults(ImmutableList.of(artifacts1, artifacts2), services)
         def selected = results.select(Mock(ArtifactSelectionSpec), false)
 
         expect:
@@ -54,7 +54,7 @@ class DefaultVisitedArtifactResultsTest extends Specification {
         artifacts1.select(services, _) >> variant1Artifacts
         artifacts2.select(services, _) >> variant2Artifacts
 
-        def results = new DefaultVisitedArtifactResults([artifacts1, artifacts2], services)
+        def results = new DefaultVisitedArtifactResults(ImmutableList.of(artifacts1, artifacts2), services)
         def selected = results.select(Mock(ArtifactSelectionSpec), false)
 
         expect:
@@ -75,7 +75,7 @@ class DefaultVisitedArtifactResultsTest extends Specification {
         artifacts1.select(services, _) >> variant1Artifacts
         artifacts2.select(services, _) >> variant2Artifacts
 
-        def results = new DefaultVisitedArtifactResults([artifacts1, artifacts2], services)
+        def results = new DefaultVisitedArtifactResults(ImmutableList.of(artifacts1, artifacts2), services)
         def selected = results.select(Mock(ArtifactSelectionSpec), true)
 
         expect:
@@ -96,7 +96,7 @@ class DefaultVisitedArtifactResultsTest extends Specification {
         artifacts1.select(services, _) >> variant1Artifacts
         artifacts2.select(services, _) >> variant2Artifacts
 
-        def results = new DefaultVisitedArtifactResults([artifacts1, artifacts2], services)
+        def results = new DefaultVisitedArtifactResults(ImmutableList.of(artifacts1, artifacts2), services)
         def selected = results.select(Mock(ArtifactSelectionSpec), true)
 
         expect:
@@ -113,7 +113,7 @@ class DefaultVisitedArtifactResultsTest extends Specification {
         artifacts1.select(services, _) >> variant1Artifacts
         artifacts2.select(services, _) >> variant2Artifacts
 
-        def results = new DefaultVisitedArtifactResults([artifacts1, artifacts2], services)
+        def results = new DefaultVisitedArtifactResults(ImmutableList.of(artifacts1, artifacts2), services)
         def selected = results.select(Mock(ArtifactSelectionSpec), true)
 
         expect:
