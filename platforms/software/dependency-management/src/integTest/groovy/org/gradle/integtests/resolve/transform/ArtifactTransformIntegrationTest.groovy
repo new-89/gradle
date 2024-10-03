@@ -1411,6 +1411,20 @@ Found the following transformation chains:
                       - buildType 'release'
                   - To attributes:
                       - artifactType 'transformed'
+  - From configuration ':lib:compile' variant 'variant2':
+      - With source attributes:
+          - artifactType 'jar'
+          - buildType 'release'
+          - flavor 'paid'
+          - usage 'api'
+      - Candidate transformation chains:
+          - Transformation chain: 'BrokenTransform':
+              - 'BrokenTransform':
+                  - Converts from attributes:
+                      - artifactType 'jar'
+                      - buildType 'release'
+                  - To attributes:
+                      - artifactType 'transformed'
   - From configuration ':lib:compile' variant 'variant3':
       - With source attributes:
           - artifactType 'jar'
