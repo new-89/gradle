@@ -46,8 +46,7 @@ public abstract class AmbiguousArtifactTransformsFailureDescriber extends Abstra
     }
 
     private String buildFailureMsg(AmbiguousArtifactTransformsFailure failure) {
-        TreeFormatter formatter = new TreeFormatter();
-        formatter.setAlwaysChildrenOnNewlines(true);
+        TreeFormatter formatter = new TreeFormatter(true);
 
         formatter.node("Found multiple transformation chains that produce a variant of '" + failure.describeRequestTarget() + "' with requested attributes");
         formatSortedAttributes(formatter, failure.getRequestedAttributes());

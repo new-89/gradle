@@ -33,16 +33,10 @@ public class TreeFormatter implements DiagnosticsVisitor {
     private final AbstractStyledTextOutput original;
     private Node current;
     private Prefixer prefixer = new DefaultPrefixer();
-    private boolean alwaysChildrenOnNewlines = false;
+    private final boolean alwaysChildrenOnNewlines;
 
     public TreeFormatter() {
-        this.original = new AbstractStyledTextOutput() {
-            @Override
-            protected void doAppend(String text) {
-                buffer.append(text);
-            }
-        };
-        this.current = new Node();
+        this(false);
     }
 
     /**
@@ -53,7 +47,14 @@ public class TreeFormatter implements DiagnosticsVisitor {
      *
      * @param alwaysChildrenOnNewlines {@code true} = never merge nodes; {@code false} (default) = merge nodes with short total text
      */
-    public void setAlwaysChildrenOnNewlines(boolean alwaysChildrenOnNewlines) {
+    public TreeFormatter(boolean alwaysChildrenOnNewlines) {
+        this.original = new AbstractStyledTextOutput() {
+            @Override
+            protected void doAppend(String text) {
+                buffer.append(text);
+            }
+        };
+        this.current = new Node();
         this.alwaysChildrenOnNewlines = alwaysChildrenOnNewlines;
     }
 

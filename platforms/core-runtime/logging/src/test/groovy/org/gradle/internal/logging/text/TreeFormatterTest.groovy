@@ -137,7 +137,7 @@ class TreeFormatterTest extends Specification {
 
     def "formats short node with single child on separate lines when asked alwaysChildrenOnNewLines = #alwaysChildrenOnNewLines"() {
         given:
-        formatter.setAlwaysChildrenOnNewlines(alwaysChildrenOnNewLines)
+        formatter = new TreeFormatter(alwaysChildrenOnNewLines)
 
         when:
         formatter.node("introduction")
