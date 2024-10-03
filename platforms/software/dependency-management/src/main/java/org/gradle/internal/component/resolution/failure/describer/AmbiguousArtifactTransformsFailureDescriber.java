@@ -92,7 +92,7 @@ public abstract class AmbiguousArtifactTransformsFailureDescriber extends Abstra
     }
 
     private void formatSourceVariant(SourceVariantData sourceVariantData, TreeFormatter formatter) {
-        formatter.node("From " + sourceVariantData.getVariantName());
+        formatter.node("From " + sourceVariantData.getFormattedVariantName());
         formatter.startChildren();
         formatter.node("With source attributes");
         formatSortedAttributes(formatter, sourceVariantData.getAttributes());

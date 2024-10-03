@@ -25,8 +25,8 @@ import org.gradle.api.internal.attributes.ImmutableAttributes;
  * <p>
  * Immutable data class.  Meant to be easily serialized as part of build operation recording and tracing.
  * <p>
- * This type is also used as a part of a {@link TransformationChainData.TransformationFingerprint}, and must
- * implement {@link #equals(Object)} and {@link #hashCode()}.
+ * This type is also used as a part of a {@link TransformationChainData.TransformationChainFingerprint}, and must
+ * properly implement {@link #equals(Object)} and {@link #hashCode()}.
  */
 public final class TransformData {
     private final Class<? extends TransformAction<?>> transformActionClass;
@@ -77,13 +77,12 @@ public final class TransformData {
         }
 
         TransformData that = (TransformData) o;
-        return transformActionClass.equals(that.transformActionClass) && transformName.equals(that.transformName) && fromAttributes.equals(that.fromAttributes) && toAttributes.equals(that.toAttributes);
+        return transformActionClass.equals(that.transformActionClass) && fromAttributes.equals(that.fromAttributes) && toAttributes.equals(that.toAttributes);
     }
 
     @Override
     public int hashCode() {
         int result = transformActionClass.hashCode();
-        result = 31 * result + transformName.hashCode();
         result = 31 * result + fromAttributes.hashCode();
         result = 31 * result + toAttributes.hashCode();
         return result;

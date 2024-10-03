@@ -72,26 +72,28 @@ public final class TransformationChainData {
     }
 
     /**
-     * Obtain an object that represents this chain in matter such that it is equal to
+     * Obtain an object that represents this chain's distinct set of transformations such that it is equal to
      * any other chain containing the same set (<strong>not sequence</strong> - the
-     * transforms can be in any order) of transforms.
+     * transforms can be in any order) of transforms from the same source variant.
      * <p>
      * Immutable data class.
      */
-    public TransformationFingerprint fingerprint() {
-        return new TransformationFingerprint(this);
+    public TransformationChainFingerprint fingerprint() {
+        return new TransformationChainFingerprint(this);
     }
 
     /**
      * Immutable data class representing a unique set (<strong>not sequence</strong> - the
-     * transforms can be in any order) of transforms in a chain.
+     * transforms can be in any order) of transforms from a given source variant in a transformation chain.
      * <p>
-     * This type must implement {@link #equals(Object)} and {@link #hashCode()}.
+     * This type must properly implement {@link #equals(Object)} and {@link #hashCode()}.
      */
-    public static final class TransformationFingerprint {
+    public static final class TransformationChainFingerprint {
+        private final SourceVariantData startingVariant;
         private final HashSet<TransformData> steps;
 
-        public TransformationFingerprint(TransformationChainData chain) {
+        public TransformationChainFingerprint(TransformationChainData chain) {
+            startingVariant = chain.startingVariant;
             steps = new HashSet<>(chain.steps);
         }
 
@@ -104,13 +106,15 @@ public final class TransformationChainData {
                 return false;
             }
 
-            TransformationFingerprint that = (TransformationFingerprint) o;
-            return Objects.equals(steps, that.steps);
+            TransformationChainFingerprint that = (TransformationChainFingerprint) o;
+            return Objects.equals(startingVariant, that.startingVariant) && steps.equals(that.steps);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(steps);
+            int result = Objects.hashCode(startingVariant);
+            result = 31 * result + steps.hashCode();
+            return result;
         }
     }
 }

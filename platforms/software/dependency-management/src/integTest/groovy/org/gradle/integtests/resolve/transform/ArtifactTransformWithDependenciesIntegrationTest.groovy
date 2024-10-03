@@ -739,6 +739,7 @@ project(':common') {
         failure.assertHasCause("The consumer was configured to find attribute 'color' with value 'blue'. However we cannot choose between the following variants of project :lib:")
 
         when:
+        2.times { executer.expectDeprecationWarning("There are multiple distinct artifact transformation chains of the same length that would satisfy this request. This behavior has been deprecated. This will fail with an error in Gradle 9.0. ") }
         run("app:resolveView")
 
         then:
@@ -749,6 +750,7 @@ project(':common') {
         outputContains("result = [app.txt, lib.jar.txt, common.jar.txt]")
 
         when:
+        2.times { executer.expectDeprecationWarning("There are multiple distinct artifact transformation chains of the same length that would satisfy this request. This behavior has been deprecated. This will fail with an error in Gradle 9.0. ") }
         run("app:resolveView")
 
         then:

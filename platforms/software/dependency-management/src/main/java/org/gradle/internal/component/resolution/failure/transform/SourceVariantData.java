@@ -18,18 +18,23 @@ package org.gradle.internal.component.resolution.failure.transform;
 
 import org.gradle.api.internal.attributes.ImmutableAttributes;
 
+import java.util.Objects;
+
 /**
  * A lightweight replacement for {@link org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact.ResolvedVariant ResolvedVariant}
  * that contains the data in the root variant that is used to begin an artifact transformation chain.
  * <p>
  * Immutable data class.  Meant to be easily serialized as part of build operation recording and tracing.
+ * <p>
+ * This type is also used as a part of a {@link TransformationChainData.TransformationChainFingerprint}, and must
+ * properly implement {@link #equals(Object)} and {@link #hashCode()}.
  */
 public final class SourceVariantData {
     private final String variantName;
     private final ImmutableAttributes attributes;
 
     public SourceVariantData(String variantName, ImmutableAttributes attributes) {
-        this.variantName = quoteVariantName(variantName);
+        this.variantName = variantName;
         this.attributes = attributes;
     }
 
@@ -41,12 +46,32 @@ public final class SourceVariantData {
         return attributes;
     }
 
-    private String quoteVariantName(String variantName) {
+    public String getFormattedVariantName() {
         int variantIdx = variantName.indexOf(" variant ");
         if (variantIdx == -1) {
             return variantName;
         } else {
             return variantName.substring(0, variantIdx + 9) + "'" + variantName.substring(variantIdx + 9) + "'";
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        SourceVariantData that = (SourceVariantData) o;
+        return Objects.equals(variantName, that.variantName) && Objects.equals(attributes, that.attributes);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(variantName);
+        result = 31 * result + Objects.hashCode(attributes);
+        return result;
     }
 }

@@ -16,9 +16,11 @@
 
 package org.gradle.integtests.resolve.transform
 
+
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
 import org.gradle.integtests.fixtures.executer.ExpectedDeprecationWarning
 import org.gradle.util.GradleVersion
+import org.gradle.util.internal.ToBeImplemented
 
 /**
  * This class tests interesting edge case scenarios involving registering Artifact Transforms.
@@ -654,5 +656,72 @@ Found the following transformation chains:
 
         expect:
         succeeds "forceResolution"
+    }
+
+    @ToBeImplemented("https://github.com/gradle/gradle/issues/30784")
+    def "registering multiple transformations using the same type and from and to attributes should fail"() {
+        file("my-initial-file.txt") << "Contents"
+
+        buildKotlinFile <<  """
+            val color = Attribute.of("color", String::class.java)
+            val shape = Attribute.of("shape", String::class.java)
+
+            configurations {
+                // Supply a square-blue variant
+                consumable("squareBlueLiquidElements") {
+                    attributes.attribute(shape, "square")
+                    attributes.attribute(color, "blue")
+
+                    outgoing {
+                        artifact(file("my-initial-file.txt"))
+                    }
+                }
+
+                dependencyScope("myDependencies")
+
+                // Initial ask is for square, satisfied by the square-blue variant
+                resolvable("resolveMe") {
+                    extendsFrom(configurations.getByName("myDependencies"))
+                    attributes.attribute(shape, "square")
+                }
+            }
+
+            abstract class BrokenTransform : TransformAction<TransformParameters.None> {
+                override fun transform(outputs: TransformOutputs) {
+                    throw AssertionError("Should not actually be selected to run")
+                }
+            }
+
+            dependencies {
+                add("myDependencies", project(":"))
+
+                // blue -> red
+                registerTransform(BrokenTransform::class.java) {
+                    from.attribute(color, "blue")
+                    to.attribute(color, "red")
+                }
+
+                // blue -> red (identical transform)
+                registerTransform(BrokenTransform::class.java) {
+                    from.attribute(color, "blue")
+                    to.attribute(color, "red")
+                }
+            }
+
+            val forceResolution by tasks.registering {
+                inputs.files(configurations.getByName("resolveMe").incoming.artifactView {
+                    // After getting initial square-blue variant with blue request, we request something red
+                    attributes.attribute(shape, "red")
+                }.artifacts.artifactFiles)
+
+                doLast {
+                    inputs.files.files.forEach { println(it) }
+                }
+            }
+        """
+
+        expect:
+        // TODO: This should FAIL with an error about registering multiple duplicate transforms
+        succeeds "tasks"
     }
 }
