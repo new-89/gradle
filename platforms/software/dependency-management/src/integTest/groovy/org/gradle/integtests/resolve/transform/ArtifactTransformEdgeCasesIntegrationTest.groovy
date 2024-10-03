@@ -31,7 +31,7 @@ class ArtifactTransformEdgeCasesIntegrationTest extends AbstractIntegrationSpec 
     def "multiple distinct transformation chains fails with a reasonable message"() {
         file("my-initial-file.txt") << "Contents"
 
-        buildKotlinFile <<  """
+        buildKotlinFile << """
             val color = Attribute.of("color", String::class.java)
             val shape = Attribute.of("shape", String::class.java)
             val matter = Attribute.of("matter", String::class.java)
@@ -242,7 +242,7 @@ class ArtifactTransformEdgeCasesIntegrationTest extends AbstractIntegrationSpec 
     def "multiple distinct transformation chains fails with a reasonable message with different transform types and non-corresponding from-to attribute pairs"() {
         file("my-initial-file.txt") << "Contents"
 
-        buildKotlinFile <<  """
+        buildKotlinFile << """
             val color = Attribute.of("color", String::class.java)
             val shape = Attribute.of("shape", String::class.java)
             val matter = Attribute.of("matter", String::class.java)
@@ -381,7 +381,7 @@ class ArtifactTransformEdgeCasesIntegrationTest extends AbstractIntegrationSpec 
     def "multiple identical attribute transformations of distinct types should fail"() {
         file("my-initial-file.txt") << "Contents"
 
-        buildKotlinFile <<  """
+        buildKotlinFile << """
             val color = Attribute.of("color", String::class.java)
             val shape = Attribute.of("shape", String::class.java)
             val texture = Attribute.of("texture", String::class.java)
@@ -519,7 +519,7 @@ Found the following transformation chains:
     def "transforms from selected chains aren't instantiated and don't run if there are no artifacts on the source variant"() {
         file("my-initial-file.txt") << "Contents"
 
-        buildKotlinFile <<  """
+        buildKotlinFile << """
             val color = Attribute.of("color", String::class.java)
             val shape = Attribute.of("shape", String::class.java)
 
@@ -579,7 +579,7 @@ Found the following transformation chains:
     def "if a transform removes all artifacts from a variant, leaving an empty directory, subsequent transforms in selected chain still run"() {
         file("my-initial-file.txt") << "Contents"
 
-        buildKotlinFile <<  """
+        buildKotlinFile << """
             val color = Attribute.of("color", String::class.java)
             val shape = Attribute.of("shape", String::class.java)
             val matter = Attribute.of("matter", String::class.java)
@@ -662,7 +662,7 @@ Found the following transformation chains:
     def "registering multiple transformations using the same type and from and to attributes should fail"() {
         file("my-initial-file.txt") << "Contents"
 
-        buildKotlinFile <<  """
+        buildKotlinFile << """
             val color = Attribute.of("color", String::class.java)
             val shape = Attribute.of("shape", String::class.java)
 
@@ -724,4 +724,179 @@ Found the following transformation chains:
         // TODO: This should FAIL with an error about registering multiple duplicate transforms
         succeeds "tasks"
     }
+
+    // region Demo Resolving Ambiguity
+    // These tests expand a test in DisambiguateArtifactTransformIntegrationTest, and explore  how to resolve the situation
+    def "when A -> C and B -> C both produce identical attributes, the later is currently by selected, unless an additional distinct attribute is added to each result to remove the latent ambiguity"() {
+        given:
+        setupDisambiguationTest()
+
+        when: "without any distinguishing attributes, we have latent ambiguity, which is reported, and an arbitrary selection is made"
+        executer.expectDeprecationWarning("There are multiple distinct artifact transformation chains of the same length that would satisfy this request. This behavior has been deprecated. This will fail with an error in Gradle 9.0. ")
+        succeeds "resolve"
+
+        then:
+        output.count("Transforming") == 2
+        output.count("Transforming lib.jar to lib.jar.txt") == 1
+        output.count("Transforming test-1.3.jar to test-1.3.jar.txt") == 1
+
+        when: "if an additional attribute is present on both chains, then we produce distinct, non-mutually compatible variants, and fail with ambiguity"
+        fails 'resolve', '-PextraAttributeA', '-PextraAttributeB'
+
+        then:
+        failureCauseContains('Found multiple transformation chains')
+    }
+
+    def "when A -> C and B -> C both produce identical attributes, adding an additional attribute to either removes the latent ambiguity and causes the other to be selected as the better match"() {
+        given:
+        setupDisambiguationTest()
+
+        when: "if only transform A produces an extra attribute, then it produces a final variant that is farther from the request because of it, so B is the winner"
+        succeeds 'resolve', '-PextraAttributeA'
+
+        then:
+        output.count("Transforming") == 2
+        output.count("Transforming lib.jar to lib.jar.txt") == 1
+        output.count("Transforming test-1.3.jar to test-1.3.jar.txt") == 1
+
+        when: "and vice-versa with B"
+        succeeds 'resolve', '-PextraAttributeB'
+
+        then:
+        output.count("Transforming") == 1
+        output.count("Transforming main to main.txt") == 1
+    }
+
+    def "when A -> C and B -> C differ by a single discriminating attribute, adding that additional attribute resolves the ambiguity"() {
+        given:
+        setupDisambiguationTest()
+
+        when:
+        succeeds 'resolve', '-PextraAttributeA', '-PextraAttributeB', '-PextraRequest=value2'
+
+        then:
+        output.count("Transforming") == 2
+        output.count("Transforming lib.jar to lib.jar.txt") == 1
+        output.count("Transforming test-1.3.jar to test-1.3.jar.txt") == 1
+    }
+
+    private void setupDisambiguationTest() {
+        def m1 = mavenRepo.module("test", "test", "1.3").publish()
+        m1.artifactFile.text = "1234"
+
+        createDirs("lib", "app")
+        settingsFile << """
+            rootProject.name = 'root'
+            include 'lib'
+            include 'app'
+        """
+
+        file('lib/src/main/java/test/MyClass.java') << """
+package test;
+
+public class MyClass {
+    public static void main(String[] args) {
+        System.out.println("Hello world!");
+    }
+}
+"""
+
+        buildFile << """
+def artifactType = Attribute.of('artifactType', String)
+def extraAttribute = Attribute.of('extra', String)
+
+allprojects {
+    repositories {
+        maven { url "${mavenRepo.uri}" }
+    }
+}
+project(':lib') {
+    apply plugin: 'java-library'
+}
+
+project(':app') {
+    apply plugin: 'java'
+
+    dependencies {
+        implementation 'test:test:1.3'
+        implementation project(':lib')
+    }
+
+    def hasExtraAttributeA = providers.gradleProperty('extraAttributeA').isPresent()
+    def hasExtraAttributeB = providers.gradleProperty('extraAttributeB').isPresent()
+    def extraRequest = providers.gradleProperty('extraRequest')
+
+    dependencies {
+        registerTransform(TestTransform) { // A
+            from.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_API))
+            from.attribute(artifactType, 'java-classes-directory')
+            to.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_API))
+            to.attribute(artifactType, 'final')
+
+            if (hasExtraAttributeA) {
+                from.attribute(extraAttribute, 'whatever')
+                to.attribute(extraAttribute, 'value1')
+            }
+        }
+        registerTransform(TestTransform) { // B
+            from.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_API))
+            from.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements, LibraryElements.JAR))
+            from.attribute(artifactType, 'jar')
+            to.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_API))
+            to.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements, LibraryElements.CLASSES))
+            to.attribute(artifactType, 'final')
+
+            if (hasExtraAttributeB) {
+                from.attribute(extraAttribute, 'whatever')
+                to.attribute(extraAttribute, 'value2')
+            }
+        }
+    }
+
+    task resolve(type: Copy) {
+        def artifacts = configurations.compileClasspath.incoming.artifactView {
+            attributes {
+                attribute(artifactType, 'final')
+                if (extraRequest.isPresent()) {
+                    attribute(extraAttribute, extraRequest.get())
+                }
+            }
+        }.artifacts
+        from artifacts.artifactFiles
+        into "\${buildDir}/libs"
+        doLast {
+            println "files: " + artifacts.collect { it.file.name }
+            println "ids: " + artifacts.collect { it.id }
+            println "components: " + artifacts.collect { it.id.componentIdentifier }
+            println "variants: " + artifacts.collect { it.variant.attributes }
+        }
+    }
+}
+
+${artifactTransform("TestTransform")}
+"""
+    }
+
+    private String artifactTransform(String className, String extension = "txt", String message = "Transforming") {
+        """
+            import org.gradle.api.artifacts.transform.TransformParameters
+
+            abstract class ${className} implements TransformAction<TransformParameters.None> {
+                ${className}() {
+                    println "Creating ${className}"
+                }
+
+                @InputArtifact
+                abstract Provider<FileSystemLocation> getInputArtifact()
+
+                void transform(TransformOutputs outputs) {
+                    def input = inputArtifact.get().asFile
+                    def output = outputs.file("\${input.name}.${extension}")
+                    println "${message} \${input.name} to \${output.name}"
+                    output.text = String.valueOf(input.length())
+                }
+            }
+        """
+    }
+    // endregion Demo Resolving Ambiguity
 }
