@@ -145,7 +145,7 @@ class ArtifactTransformEdgeCasesIntegrationTest extends AbstractIntegrationSpec 
                - shape 'square'
                - texture 'unknown'
            - Candidate transformation chains:
-               - Transformation chain: 'BrokenTransform', 'BrokenTransform', 'BrokenTransform', 'BrokenTransform', producing attributes:
+               - Transformation chain: 'BrokenTransform' -> 'BrokenTransform' -> 'BrokenTransform' -> 'BrokenTransform':
                    - 'BrokenTransform':
                        - Converts from attributes:
                            - shape 'square'
@@ -168,7 +168,7 @@ class ArtifactTransformEdgeCasesIntegrationTest extends AbstractIntegrationSpec 
                            - color 'purple'
                        - To attributes:
                            - color 'red'
-               - Transformation chain: 'BrokenTransform', 'BrokenTransform', 'BrokenTransform', 'BrokenTransform', producing attributes:
+               - Transformation chain: 'BrokenTransform' -> 'BrokenTransform' -> 'BrokenTransform' -> 'BrokenTransform':
                    - 'BrokenTransform':
                        - Converts from attributes:
                            - shape 'square'
@@ -191,7 +191,7 @@ class ArtifactTransformEdgeCasesIntegrationTest extends AbstractIntegrationSpec 
                            - color 'purple'
                        - To attributes:
                            - color 'red'
-               - Transformation chain: 'BrokenTransform', 'BrokenTransform', 'BrokenTransform', 'BrokenTransform', producing attributes:
+               - Transformation chain: 'BrokenTransform' -> 'BrokenTransform' -> 'BrokenTransform' -> 'BrokenTransform':
                    - 'BrokenTransform':
                        - Converts from attributes:
                            - color 'blue'
@@ -214,7 +214,7 @@ class ArtifactTransformEdgeCasesIntegrationTest extends AbstractIntegrationSpec 
                            - shape 'triangle'
                        - To attributes:
                            - shape 'round'
-               - Transformation chain: 'BrokenTransform', 'BrokenTransform', 'BrokenTransform', 'BrokenTransform', producing attributes:
+               - Transformation chain: 'BrokenTransform' -> 'BrokenTransform' -> 'BrokenTransform' -> 'BrokenTransform':
                    - 'BrokenTransform':
                        - Converts from attributes:
                            - shape 'square'
@@ -348,7 +348,7 @@ class ArtifactTransformEdgeCasesIntegrationTest extends AbstractIntegrationSpec 
                - shape 'square'
                - texture 'smooth'
            - Candidate transformation chains:
-               - Transformation chain: 'BrokenColorTransform', 'BrokenShapeTransform', producing attributes:
+               - Transformation chain: 'BrokenColorTransform' -> 'BrokenShapeTransform':
                    - 'BrokenColorTransform':
                        - Converts from attributes:
                            - color 'blue'
@@ -362,7 +362,7 @@ class ArtifactTransformEdgeCasesIntegrationTest extends AbstractIntegrationSpec 
                            - texture 'bumpy'
                        - To attributes:
                            - shape 'round'
-               - Transformation chain: 'BrokenColorTransform', 'BrokenShapeTransform', producing attributes:
+               - Transformation chain: 'BrokenColorTransform' -> 'BrokenShapeTransform':
                    - 'BrokenColorTransform':
                        - Converts from attributes:
                            - color 'blue'
@@ -463,14 +463,14 @@ Found the following transformation chains:
           - shape 'square'
           - texture 'smooth'
       - Candidate transformation chains:
-          - Transformation chain: 'BrokenColorTransform', producing attributes:
+          - Transformation chain: 'BrokenColorTransform':
               - 'BrokenColorTransform':
                   - Converts from attributes:
                       - color 'blue'
                       - texture 'smooth'
                   - To attributes:
                       - color 'red'
-          - Transformation chain: 'BrokenColorTransform2', producing attributes:
+          - Transformation chain: 'BrokenColorTransform2':
               - 'BrokenColorTransform2':
                   - Converts from attributes:
                       - color 'blue'
@@ -499,14 +499,14 @@ Found the following transformation chains:
           - shape 'square'
           - texture 'smooth'
       - Candidate transformation chains:
-          - Transformation chain: 'BrokenColorTransform', producing attributes:
+          - Transformation chain: 'BrokenColorTransform':
               - 'BrokenColorTransform':
                   - Converts from attributes:
                       - color 'blue'
                       - texture 'smooth'
                   - To attributes:
                       - color 'red'
-          - Transformation chain: 'BrokenColorTransform2', producing attributes:
+          - Transformation chain: 'BrokenColorTransform2':
               - 'BrokenColorTransform2':
                   - Converts from attributes:
                       - color 'blue'

@@ -381,7 +381,7 @@ class ResolutionFailureHandlerIntegrationTest extends AbstractIntegrationSpec {
                - shape 'round'
                - state 'liquid'
            - Candidate transformation chains:
-               - Transformation chain: 'BrokenTransform', producing attributes:
+               - Transformation chain: 'BrokenTransform':
                    - 'BrokenTransform':
                        - Converts from attributes:
                            - color 'blue'
@@ -389,7 +389,7 @@ class ResolutionFailureHandlerIntegrationTest extends AbstractIntegrationSpec {
                        - To attributes:
                            - color 'red'
                            - state 'gas'
-               - Transformation chain: 'BrokenTransform', producing attributes:
+               - Transformation chain: 'BrokenTransform':
                    - 'BrokenTransform':
                        - Converts from attributes:
                            - color 'blue'

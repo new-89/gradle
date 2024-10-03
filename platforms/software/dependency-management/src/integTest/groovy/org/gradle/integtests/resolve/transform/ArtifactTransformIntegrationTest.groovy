@@ -1298,7 +1298,7 @@ Found the following transformation chains:
           - artifactType 'custom'
           - usage 'api'
       - Candidate transformation chains:
-          - Transformation chain: 'BrokenTransform', producing attributes:
+          - Transformation chain: 'BrokenTransform':
               - 'BrokenTransform':
                   - Converts from attributes:
                       - artifactType 'custom'
@@ -1306,7 +1306,7 @@ Found the following transformation chains:
                   - To attributes:
                       - artifactType 'transformed'
                       - extra 'bar'
-          - Transformation chain: 'BrokenTransform', producing attributes:
+          - Transformation chain: 'BrokenTransform':
               - 'BrokenTransform':
                   - Converts from attributes:
                       - artifactType 'custom'
@@ -1404,7 +1404,7 @@ Found the following transformation chains:
           - flavor 'free'
           - usage 'api'
       - Candidate transformation chains:
-          - Transformation chain: 'BrokenTransform', producing attributes:
+          - Transformation chain: 'BrokenTransform':
               - 'BrokenTransform':
                   - Converts from attributes:
                       - artifactType 'jar'
@@ -1418,7 +1418,7 @@ Found the following transformation chains:
           - flavor 'free'
           - usage 'api'
       - Candidate transformation chains:
-          - Transformation chain: 'BrokenTransform', producing attributes:
+          - Transformation chain: 'BrokenTransform':
               - 'BrokenTransform':
                   - Converts from attributes:
                       - artifactType 'jar'

@@ -69,7 +69,7 @@ public abstract class AmbiguousArtifactTransformsFailureDescriber extends Abstra
             formatter.node("Candidate transformation chains");
             formatter.startChildren();
             transformations.forEach(transformationChainData -> {
-                formatter.node("Transformation chain: " + transformationChainData.summarizeTransformations() + ", producing attributes:");
+                formatter.node("Transformation chain: " + transformationChainData.summarizeTransformations());
                 formatter.startChildren();
                 transformationChainData.getSteps().forEach(step -> {
                     formatter.node("'" + step.getTransformName() + "'");

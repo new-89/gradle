@@ -150,7 +150,7 @@ Found the following transformation chains:
       - With source attributes:
           - artifactType 'jar'
       - Candidate transformation chains:
-          - Transformation chain: '', producing attributes:
+          - Transformation chain: '':
               - '':
                   - Converts from attributes
                   - To attributes:
@@ -159,7 +159,7 @@ Found the following transformation chains:
       - With source attributes:
           - artifactType 'classes'
       - Candidate transformation chains:
-          - Transformation chain: '', producing attributes:
+          - Transformation chain: '':
               - '':
                   - Converts from attributes
                   - To attributes:

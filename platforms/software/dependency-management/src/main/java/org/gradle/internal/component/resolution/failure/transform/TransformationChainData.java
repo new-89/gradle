@@ -52,7 +52,7 @@ public final class TransformationChainData {
     public String summarizeTransformations() {
         return steps.stream()
             .map(t -> "'" + t.getTransformName() + "'")
-            .collect(Collectors.joining(", "));
+            .collect(Collectors.joining(" -> "));
     }
 
     public ImmutableList<TransformData> getSteps() {
