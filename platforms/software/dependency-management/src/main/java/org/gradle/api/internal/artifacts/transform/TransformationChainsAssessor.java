@@ -97,6 +97,7 @@ public final class TransformationChainsAssessor {
      * <p>
      * All transformation chains contained anywhere within a single instance should have the same length.
      */
+    @SuppressWarnings({"FieldCanBeLocal", "unused"}) // TODO: prune these
     public static final class AssessedTransformChains {
         private final List<TransformedVariant> candidateChains;
 
