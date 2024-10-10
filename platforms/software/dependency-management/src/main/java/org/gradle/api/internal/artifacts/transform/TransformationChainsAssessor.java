@@ -19,10 +19,15 @@ package org.gradle.api.internal.artifacts.transform;
 import com.google.common.collect.Iterables;
 import org.gradle.api.internal.attributes.ImmutableAttributes;
 import org.gradle.api.internal.attributes.matching.AttributeMatcher;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.internal.component.model.AttributeMatchingExplanationBuilder;
 import org.gradle.internal.component.resolution.failure.transform.TransformationChainData.TransformationChainFingerprint;
 import org.gradle.internal.component.resolution.failure.transform.TransformedVariantConverter;
+import org.gradle.internal.service.scopes.Scope;
+import org.gradle.internal.service.scopes.ServiceScope;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -40,9 +45,16 @@ import java.util.stream.Collectors;
  * This class is not meant to take any action on the result, but just to handle separating
  * each chain into the appropriate bucket.
  */
+@ServiceScope(Scope.Build.class)
 public final class TransformationChainsAssessor {
+    private final ProviderFactory providerFactory;
     private final TransformedVariantConverter converter = new TransformedVariantConverter();
     private final AttributeMatchingExplanationBuilder explanationBuilder = AttributeMatchingExplanationBuilder.logging();
+
+    @Inject
+    public TransformationChainsAssessor(ProviderFactory providerFactory) {
+        this.providerFactory = providerFactory;
+    }
 
     /**
      * Assessed a given list of candidate transformation chains by finding which chains match to the target attributes
@@ -59,19 +71,25 @@ public final class TransformationChainsAssessor {
         ImmutableAttributes targetAttributes
     ) {
         List<TransformedVariant> matchingChains = attributeMatcher.matchMultipleCandidates(candidateChains, targetAttributes, explanationBuilder);
-
-        Map<TransformationChainFingerprint, List<TransformedVariant>> chainsByFingerprint = new LinkedHashMap<>(candidateChains.size());
-        Set<List<TransformedVariant>> mutuallyCompatibleChains = new LinkedHashSet<>(candidateChains.size());
-
-        for (TransformedVariant chain : matchingChains) {
-            TransformationChainFingerprint fingerprint = converter.convert(chain).fingerprint();
-            chainsByFingerprint.computeIfAbsent(fingerprint, f -> new ArrayList<>()).add(chain);
-
-            List<TransformedVariant> compatibleChains = findCompatibleChains(attributeMatcher, mutuallyCompatibleChains, chain);
-            compatibleChains.add(chain);
-        }
-
-        return new AssessedTransformChains(candidateChains, targetAttributes, chainsByFingerprint, mutuallyCompatibleChains);
+        return new AssessedTransformChains(
+            candidateChains,
+            targetAttributes,
+            providerFactory.provider(() -> {
+                Map<TransformationChainFingerprint, List<TransformedVariant>> chainsByFingerprint = new LinkedHashMap<>(candidateChains.size());
+                for (TransformedVariant chain : matchingChains) {
+                    TransformationChainFingerprint fingerprint = converter.convert(chain).fingerprint();
+                    chainsByFingerprint.computeIfAbsent(fingerprint, f -> new ArrayList<>()).add(chain);
+                }
+                return chainsByFingerprint;
+            }),
+            providerFactory.provider(() -> {
+                Set<List<TransformedVariant>> mutuallyCompatibleChains = new LinkedHashSet<>(candidateChains.size());
+                for (TransformedVariant chain : matchingChains) {
+                    List<TransformedVariant> compatibleChains = findCompatibleChains(attributeMatcher, mutuallyCompatibleChains, chain);
+                    compatibleChains.add(chain);
+                }
+                return mutuallyCompatibleChains;
+            }));
     }
 
     private static List<TransformedVariant> findCompatibleChains(AttributeMatcher matcher, Set<List<TransformedVariant>> compatibleChainGroups, TransformedVariant candidate) {
@@ -97,7 +115,6 @@ public final class TransformationChainsAssessor {
      * <p>
      * All transformation chains contained anywhere within a single instance should have the same length.
      */
-    @SuppressWarnings({"FieldCanBeLocal", "unused"}) // TODO: prune these
     public static final class AssessedTransformChains {
         private final List<TransformedVariant> candidateChains;
 
@@ -105,17 +122,17 @@ public final class TransformationChainsAssessor {
          * Each value in this map represents a group of chains that produce the same fingerprint,
          * which means they represent the same transformations applied in a different sequence.
          */
-        private final Map<TransformationChainFingerprint, List<TransformedVariant>> chainsByFingerprint;
+        private final Provider<Map<TransformationChainFingerprint, List<TransformedVariant>>> chainsByFingerprint;
 
         /**
          * Each value in this set represents a group of chains that produce compatible final sets
          * of attributes when applied to some (not necessarily the same) source variant.
          */
-        private final Set<List<TransformedVariant>> compatibleChainsGroups;
+        private final Provider<Set<List<TransformedVariant>>> compatibleChainsGroups;
 
         private final ImmutableAttributes targetAttributes;
 
-        private AssessedTransformChains(List<TransformedVariant> candidateChains, final ImmutableAttributes targetAttributes, Map<TransformationChainFingerprint, List<TransformedVariant>> chainsByFingerprint, Set<List<TransformedVariant>> compatibleChains) {
+        private AssessedTransformChains(List<TransformedVariant> candidateChains, final ImmutableAttributes targetAttributes, Provider<Map<TransformationChainFingerprint, List<TransformedVariant>>> chainsByFingerprint, Provider<Set<List<TransformedVariant>>> compatibleChains) {
             this.candidateChains = candidateChains;
             this.targetAttributes = targetAttributes;
             this.chainsByFingerprint = chainsByFingerprint;
@@ -128,7 +145,7 @@ public final class TransformationChainsAssessor {
          * @return {@code true} if so; {@code false} otherwise
          */
         public boolean hasAnyMatches() {
-            return !compatibleChainsGroups.isEmpty();
+            return !compatibleChainsGroups.get().isEmpty();
         }
 
         /**
@@ -137,9 +154,9 @@ public final class TransformationChainsAssessor {
          * @return single truly distinct transformation chain in this result set if one exists; else {@link Optional#empty()}
          */
         public Optional<TransformedVariant> getSingleDistinctMatchingChain() {
-            if (chainsByFingerprint.size() == 1) {
-                TransformationChainFingerprint onlyFingerprint = Iterables.getOnlyElement(chainsByFingerprint.keySet());
-                List<TransformedVariant> chainsWithOnlyFingerprint = chainsByFingerprint.get(onlyFingerprint);
+            if (chainsByFingerprint.get().size() == 1) {
+                TransformationChainFingerprint onlyFingerprint = Iterables.getOnlyElement(chainsByFingerprint.get().keySet());
+                List<TransformedVariant> chainsWithOnlyFingerprint = chainsByFingerprint.get().get(onlyFingerprint);
                 if (chainsWithOnlyFingerprint.size() == 1) {
                     return Optional.of(chainsWithOnlyFingerprint.get(0));
                 }
@@ -155,7 +172,7 @@ public final class TransformationChainsAssessor {
          * @return one arbitrary chain from each distinct set of chains within the matching candidates
          */
         public List<TransformedVariant> getDistinctMatchingChainRepresentatives() {
-            return chainsByFingerprint.values().stream()
+            return chainsByFingerprint.get().values().stream()
                 .map(transformedVariants -> transformedVariants.get(0))
                 .collect(Collectors.toList());
         }
@@ -166,11 +183,19 @@ public final class TransformationChainsAssessor {
          * @return single group of mutually compatible matching candidates if one exists; else {@link Optional#empty()}
          */
         public Optional<List<TransformedVariant>> getSingleGroupOfCompatibleChains() {
-            if (compatibleChainsGroups.size() == 1) {
-                return Optional.of(Iterables.getOnlyElement(compatibleChainsGroups));
+            if (compatibleChainsGroups.get().size() == 1) {
+                return Optional.of(Iterables.getOnlyElement(compatibleChainsGroups.get()));
             } else {
                 return Optional.empty();
             }
+        }
+
+        public ImmutableAttributes getTargetAttributes() {
+            return targetAttributes;
+        }
+
+        public List<TransformedVariant> getCandidateChains() {
+            return candidateChains;
         }
     }
 }

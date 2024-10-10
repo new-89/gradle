@@ -51,7 +51,7 @@ public class AttributeMatchingArtifactVariantSelector implements ArtifactVariant
     private final AttributesFactory attributesFactory;
     private final AttributeSchemaServices attributeSchemaServices;
     private final TransformedVariantFactory transformedVariantFactory;
-    private final TransformationChainsAssessor transformationChainsAssessor = new TransformationChainsAssessor();
+    private final TransformationChainsAssessor transformationChainsAssessor;
     private final ResolutionFailureHandler failureHandler;
 
     AttributeMatchingArtifactVariantSelector(
@@ -61,6 +61,7 @@ public class AttributeMatchingArtifactVariantSelector implements ArtifactVariant
         AttributesFactory attributesFactory,
         AttributeSchemaServices attributeSchemaServices,
         TransformedVariantFactory transformedVariantFactory,
+        TransformationChainsAssessor transformationChainsAssessor,
         ResolutionFailureHandler failureHandler
     ) {
         this.consumerSchema = consumerSchema;
@@ -69,6 +70,7 @@ public class AttributeMatchingArtifactVariantSelector implements ArtifactVariant
         this.attributesFactory = attributesFactory;
         this.attributeSchemaServices = attributeSchemaServices;
         this.transformedVariantFactory = transformedVariantFactory;
+        this.transformationChainsAssessor = transformationChainsAssessor;
         this.failureHandler = failureHandler;
     }
 
@@ -183,7 +185,7 @@ public class AttributeMatchingArtifactVariantSelector implements ArtifactVariant
          It has never been allowed and fails the build.  The error message should report one representative of each
          distinct chain, so that the author can understand what's happening here and correct it.
         */
-        throw failureHandler.ambiguousArtifactTransformsFailure(targetVariantSet, requestedAttributes, result.getDistinctMatchingChainRepresentatives());
+        throw failureHandler.ambiguousArtifactTransformsFailure(targetVariantSet, result.getTargetAttributes(), result.getDistinctMatchingChainRepresentatives());
     }
 
     private void warnThatMultipleDistinctChainsAreAvailable(ResolvedVariantSet targetVariantSet, ImmutableAttributes requestedAttributes, ResolutionFailureHandler failureHandler, List<TransformedVariant> trulyDistinctChains) {

@@ -32,6 +32,7 @@ import org.gradle.api.internal.attributes.ImmutableAttributes
 import org.gradle.api.internal.attributes.immutable.ImmutableAttributesSchema
 import org.gradle.api.internal.attributes.matching.AttributeMatcher
 import org.gradle.api.internal.initialization.StandaloneDomainObjectContext
+import org.gradle.api.internal.provider.DefaultProviderFactory
 import org.gradle.internal.Describables
 import org.gradle.internal.component.model.AttributeMatchingExplanationBuilder
 import org.gradle.internal.component.resolution.failure.exception.ArtifactSelectionException
@@ -52,6 +53,7 @@ class DefaultArtifactVariantSelectorFactoryTest extends Specification {
     }
     def factory = Mock(ArtifactVariantSelector.ResolvedArtifactTransformer)
     def transformedVariantFactory = Mock(TransformedVariantFactory)
+    def transformationChainsAssessor = new TransformationChainsAssessor(new DefaultProviderFactory())
     def variantSelectionFailureProcessor = DependencyManagementTestUtil.newFailureHandler()
     def variantSelectorFactory = new DefaultVariantSelectorFactory(
         matchingCache,
@@ -61,7 +63,8 @@ class DefaultArtifactVariantSelectorFactoryTest extends Specification {
         variantSelectionFailureProcessor,
         StandaloneDomainObjectContext.ANONYMOUS,
         TestUtil.calculatedValueContainerFactory(),
-        TestUtil.taskDependencyFactory()
+        TestUtil.taskDependencyFactory(),
+        transformationChainsAssessor
     )
 
     def "selects producer variant with requested attributes"() {
