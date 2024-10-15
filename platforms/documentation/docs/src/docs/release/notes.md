@@ -32,7 +32,7 @@ For Java, Groovy, Kotlin, and Android compatibility, see the [full compatibility
 Previously, when two or more equal-length chains of <<artifact_transforms.adoc#sec,artifact transforms>> produced compatible variants to satisfy a resolution request, Gradle would arbitrarily and silently select one.
 Now, Gradle emits a deprecation warning that explains this situation.
 
-This deprecation warning is the same failure message that now appears when multiple equal-length chains are available that produce _incompatible_ variants that would still each satisfy a resolution request.
+This deprecation warning is the same failure message that now appears when multiple equal-length chains are available, producing incompatible variants that could each satisfy a resolution request.
 In this case, resolution fails with an ambiguity failure, and Gradle emits a message like this:
 
 ```text
