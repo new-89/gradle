@@ -33,7 +33,7 @@ Previously, when at least two equal-length chains of <<artifact_transforms.adoc#
 Now, Gradle emits a deprecation warning that explains this situation.
 
 This deprecation warning is the same failure message that now appears when multiple equal-length chains are available that produce _incompatible_ variants that would still each satisfy a resolution request.
-In this situation, resolution fails with an ambiguity failure, and Gradle emits a failure message that looks like this:
+In this case, resolution fails with an ambiguity failure, and Gradle emits a message like this:
 
 ```text
 FAILURE: Build failed with an exception.
