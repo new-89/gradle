@@ -85,7 +85,7 @@ Could not determine the dependencies of task ':forceResolution'.
 ```
 
 The formatting of this message has been improved to comprehensively display information about each complete chain of transformations that produces the candidates that would satisfy the request.
-This allows authors to better analyze and understand their builds to resolve such problems by removing the ambiguity.
+This allows authors to better analyze and understand their builds, allowing them to remove the ambiguity.
 
 <!-- Do not add breaking changes or deprecations here! Add them to the upgrade guide instead. -->
 
