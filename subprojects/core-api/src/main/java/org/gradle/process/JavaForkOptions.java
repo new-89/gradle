@@ -17,8 +17,6 @@
 package org.gradle.process;
 
 import org.gradle.api.Action;
-import org.gradle.api.Incubating;
-import org.gradle.api.NonNullApi;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
@@ -34,7 +32,6 @@ import org.gradle.internal.instrumentation.api.annotations.ReplacedAccessor;
 import org.gradle.internal.instrumentation.api.annotations.ReplacedAccessor.AccessorType;
 import org.gradle.internal.instrumentation.api.annotations.ReplacesEagerProperty;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -174,8 +171,6 @@ public interface JavaForkOptions extends ProcessForkOptions {
      * <p>
      * Since Gradle 5.6, you can configure the port and other Java debug properties via
      * {@link #debugOptions(Action)}.
-     *
-     * @return A Property[true] when debugging is enabled, false to disable.
      */
     @Input
     @ReplacesEagerProperty(replacedAccessors = {
@@ -219,18 +214,4 @@ public interface JavaForkOptions extends ProcessForkOptions {
      * @return this
      */
     JavaForkOptions copyTo(JavaForkOptions options);
-
-    /**
-     * Class representing null value for system properties.
-     *
-     * @since 9.0
-     */
-    @NonNullApi
-    @Incubating
-    final class NullValue implements Serializable {
-        private static final long serialVersionUID = 1L;
-
-        private NullValue() {
-        }
-    }
 }
