@@ -9,7 +9,7 @@ version = "1.0"
 publishing {
     repositories {
         maven {
-            setUrl(file("../../local-repo"))
+            url = uri(file("../../local-repo"))
         }
     }
     publications {

@@ -17,12 +17,13 @@
 package gradlebuild.basics
 
 import org.gradle.api.artifacts.dsl.RepositoryHandler
+import java.net.URI
 
 
 fun RepositoryHandler.googleApisJs() {
     ivy {
         name = "googleApisJs"
-        setUrl("https://ajax.googleapis.com/ajax/libs")
+        url = URI.create("https://ajax.googleapis.com/ajax/libs")
         patternLayout {
             artifact("[organization]/[revision]/[module].[ext]")
             ivy("[organization]/[revision]/[module].xml")
