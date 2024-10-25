@@ -17,7 +17,7 @@
 package org.gradle.internal.operations
 
 
-import org.gradle.internal.time.MockClock
+import org.gradle.internal.time.FixedClock
 import org.gradle.test.fixtures.concurrent.ConcurrentSpec
 
 import javax.annotation.Nullable
@@ -28,7 +28,7 @@ import static org.gradle.internal.operations.DefaultBuildOperationRunner.Readabl
 
 class DefaultBuildOperationRunnerTest extends ConcurrentSpec {
 
-    def timeProvider = MockClock.createAt(123L)
+    def timeProvider = new FixedClock(123)
     def listener = Mock(BuildOperationExecutionListener)
     def currentBuildOperationRef = CurrentBuildOperationRef.instance()
     def operationRunner = new DefaultBuildOperationRunner(
@@ -61,7 +61,7 @@ class DefaultBuildOperationRunnerTest extends ConcurrentSpec {
             assert descriptor.name == "<op>"
             assert descriptor.displayName == "<some-operation>"
             assert descriptor.details == details
-            assert operationState.startTime == 123L
+            assert operationState.startTime.timeMs == 123L
         }
 
         then:
@@ -109,7 +109,7 @@ class DefaultBuildOperationRunnerTest extends ConcurrentSpec {
             assert descriptor.name == "<op>"
             assert descriptor.displayName == "<some-operation>"
             assert descriptor.details == details
-            assert operationState.startTime == 123L
+            assert operationState.startTime.timeMs == 123L
         }
 
         when:
@@ -725,7 +725,7 @@ class DefaultBuildOperationRunnerTest extends ConcurrentSpec {
     }
 
     private static BuildOperationState operation(String description) {
-        def operation = new BuildOperationState(displayName(description).build(), 100L)
+        def operation = new BuildOperationState(displayName(description).build(), new FixedClock(100L).timestamp)
         operation.running = true
         return operation
     }
