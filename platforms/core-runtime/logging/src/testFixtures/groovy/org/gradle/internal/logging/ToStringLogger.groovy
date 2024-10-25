@@ -28,7 +28,7 @@ class ToStringLogger extends OutputEventListenerBackedLogger {
     private final StringBuilder log = new StringBuilder()
 
     ToStringLogger() {
-        super("ToStringLogger", new OutputEventListenerBackedLoggerContext(new MockClock()), new MockClock())
+        super("ToStringLogger", new OutputEventListenerBackedLoggerContext(MockClock.createAutoIncrementing()), MockClock.createAutoIncrementing())
     }
 
     @Override

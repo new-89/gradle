@@ -27,7 +27,7 @@ import spock.lang.Subject
 
 class ThrottlingOutputEventListenerTest extends OutputSpecification {
     def listener = Mock(OutputEventListener)
-    def clock = new MockClock()
+    def clock = MockClock.createAutoIncrementing()
     def executor = new MockExecutor()
 
     @Subject renderer = new ThrottlingOutputEventListener(listener, 100, executor, clock)

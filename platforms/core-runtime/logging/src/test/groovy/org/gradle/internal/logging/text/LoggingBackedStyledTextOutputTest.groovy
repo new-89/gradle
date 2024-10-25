@@ -23,13 +23,16 @@ import org.gradle.internal.operations.CurrentBuildOperationRef
 import org.gradle.internal.operations.DefaultBuildOperationRef
 import org.gradle.internal.operations.OperationIdentifier
 import org.gradle.internal.time.Clock
+import org.gradle.internal.time.FixedClock
 
-import static org.gradle.internal.logging.text.StyledTextOutput.Style.*
+import static org.gradle.internal.logging.text.StyledTextOutput.Style.Header
+import static org.gradle.internal.logging.text.StyledTextOutput.Style.Normal
+import static org.gradle.internal.logging.text.StyledTextOutput.Style.UserInput
 
 class LoggingBackedStyledTextOutputTest extends OutputSpecification {
 
     private final OutputEventListener listener = Mock()
-    private final Clock timeProvider = { 1200L } as Clock
+    private final Clock timeProvider = FixedClock.createAt(1200L)
     private final LoggingBackedStyledTextOutput output = new LoggingBackedStyledTextOutput(listener, 'category', LogLevel.INFO, timeProvider)
     private final CurrentBuildOperationRef currentBuildOperationRef = CurrentBuildOperationRef.instance()
 

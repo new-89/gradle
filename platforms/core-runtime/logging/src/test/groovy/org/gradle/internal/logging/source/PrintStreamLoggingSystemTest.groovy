@@ -24,6 +24,7 @@ import org.gradle.internal.operations.CurrentBuildOperationRef
 import org.gradle.internal.operations.DefaultBuildOperationRef
 import org.gradle.internal.operations.OperationIdentifier
 import org.gradle.internal.time.Clock
+import org.gradle.internal.time.FixedClock
 import org.gradle.util.internal.TextUtil
 import spock.lang.Specification
 
@@ -33,7 +34,7 @@ class PrintStreamLoggingSystemTest extends Specification {
     private final PrintStream originalStream = new PrintStream(original)
     private PrintStream stream = originalStream
     private final OutputEventListener listener = Mock()
-    private final Clock timeProvider = { 1200L } as Clock
+    private final Clock timeProvider = FixedClock.createAt(1200L)
     private final PrintStreamLoggingSystem loggingSystem = new PrintStreamLoggingSystem(listener, 'category', timeProvider) {
         protected PrintStream get() {
             stream

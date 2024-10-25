@@ -17,15 +17,14 @@
 package org.gradle.internal.time;
 
 public class MockClock implements Clock {
+    public static final long DEFAULT_AUTOINCREMENT_MS = 10L;
 
-    long current;
+    private long current;
+    private final long autoIncrement;
 
-    public MockClock() {
-        this(System.currentTimeMillis());
-    }
-
-    public MockClock(long startTime) {
-        current = startTime;
+    private MockClock(long startTimeMs, long autoIncrement) {
+        this.current = startTimeMs;
+        this.autoIncrement = autoIncrement;
     }
 
     public void increment(long diff) {
@@ -35,8 +34,41 @@ public class MockClock implements Clock {
     /** Increments the time by 10ms and returns it. */
     @Override
     public long getCurrentTime() {
-        current += 10L;
+        current += autoIncrement;
         return current;
     }
 
+    /**
+     * Creates an instance of a mock clock that starts at 0 and is only incremented by {@link #increment(long)}.
+     * @return the mock clock
+     */
+    public static MockClock create() {
+        return new MockClock(0, 0);
+    }
+
+    /**
+     * Creates an instance of a mock clock that starts at 0 and is only incremented by {@link #increment(long)}.
+     * @param startTime start time in milliseconds since epoch
+     * @return the mock clock
+     */
+    public static MockClock createAt(long startTime) {
+        return new MockClock(startTime, 0);
+    }
+
+    /**
+     * Creates an instance of a mock clock that starts at 0 and is incremented by {@link #DEFAULT_AUTOINCREMENT_MS} upon every {@link #getCurrentTime()} call.
+     * @return the mock clock
+     */
+    public static MockClock createAutoIncrementing() {
+        return new MockClock(0, DEFAULT_AUTOINCREMENT_MS);
+    }
+
+    /**
+     * Creates an instance of a mock clock that starts at {@code startTime} and is incremented by {@link #DEFAULT_AUTOINCREMENT_MS} upon every {@link #getCurrentTime()} call.
+     * @param startTime start time in milliseconds since epoch
+     * @return the mock clock
+     */
+    public static MockClock createAutoIncrementingAt(long startTime) {
+        return new MockClock(startTime, DEFAULT_AUTOINCREMENT_MS);
+    }
 }
