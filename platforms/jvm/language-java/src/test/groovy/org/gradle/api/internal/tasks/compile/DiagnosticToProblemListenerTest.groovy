@@ -45,7 +45,6 @@ class DiagnosticToProblemListenerTest extends Specification {
 
         then:
         1 * spec.id("dummy-code", "Java compilation error", GradleCoreProblemGroup.compilation().java())
-        1 * spec.details(_)
     }
 
     def "file location is correctly reported"() {
@@ -199,7 +198,6 @@ class DiagnosticToProblemListenerTest extends Specification {
         0 * spec.lineInFileLocation(_, _, _)
         1 * spec.lineInFileLocation("SomeFile.java", 1, 1, 10)
         0 * spec.offsetInFileLocation("SomeFile.java", 10, 10)
-        1 * spec.details(_)
     }
 
     def "multiline diagnostic messages are composed into contextual message and details"() {

@@ -320,7 +320,7 @@ class JavaCompileProblemsIntegrationTest extends AbstractIntegrationSpec impleme
             verifyAll(getSingleLocation(ReceivedProblem.ReceivedFileLocation)) {
                 it.path == fooFileLocation.absolutePath
             }
-            details == """\
+            additionalData.asMap["formatted"] == """\
 $fooFileLocation:5: warning: [cast] redundant cast to $expectedType
         String s = (String)"Hello World";
                    ^"""
@@ -331,7 +331,7 @@ $fooFileLocation:5: warning: [cast] redundant cast to $expectedType
             fqid == 'compilation:java:compiler-warn-redundant-cast'
             contextualLabel == 'redundant cast to java.lang.String'
             solutions.empty
-            details == """\
+            additionalData.asMap["formatted"] == """\
 ${fooFileLocation}:9: warning: [cast] redundant cast to $expectedType
         String s = (String)"Hello World";
                    ^"""
